@@ -57,17 +57,22 @@ public class ConfigActivity extends AppCompatActivity {
     FarmConfig farmConfig = FarmConfig.fromFile(null);
 
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    //@RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         FarmConfig temporaryFarmConfig = farmConfig;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
-        Path path = pathFromIntent(getIntent());
-        if(hasFilePermission()){
-            temporaryFarmConfig = FarmConfig.fromFile(path);
+        Intent intent = getIntent();
+        byte[] configBytes = intent.getByteArrayExtra("config");
+        if(isNull(configBytes)) {
+            Path path = pathFromIntent(intent);
+            if (hasFilePermission()) {
+                temporaryFarmConfig = FarmConfig.fromFile(path);
+            }
+        } else {
+            temporaryFarmConfig = FarmConfig.fromByteArray(configBytes);
         }
-
         LinearLayout linear_vertical_container = findViewById(R.id.linear_vertical_container);
 
         //create FarmConfig.PROPERTIES_NUMBER rows with text, seekbar and input for number

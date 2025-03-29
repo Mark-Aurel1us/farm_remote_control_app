@@ -8,6 +8,7 @@
     tools:context="ru.mipt.farmremotecontrolapp.StatisticsActivity">
 
     <LinearLayout
+        android:id="@+id/statistics_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -24,12 +25,14 @@
                 android:layout_weight="1"
                 android:text="Temperature" />
 
-        </LinearLayout>
+            <Button
+                android:id="@+id/waterlevel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Water level" />
 
-        <ImageView
-            android:id="@+id/graphic"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,12 +33,16 @@ public class FarmConfig {
 
     private int[] properties;
 
-    private FarmConfig(int[] Array){
-        if(isNull(Array) || Array.length != PROPERTIES_NUMBER){
+    private FarmConfig(int[] array){
+        if(isNull(array) || array.length != PROPERTIES_NUMBER){
             this.properties = PROPERTIES_MIN.clone();
         }
         else {
-            this.properties = Array;
+            this.properties = new int[PROPERTIES_NUMBER];
+            for(int i = 0; i < PROPERTIES_NUMBER; i ++){
+                this.setProperty(i, array[i]);
+            }
+
         }
     }
 
@@ -73,6 +78,26 @@ public class FarmConfig {
             Log.d(TAG,"Error parsing JSON file");
         }
         return new FarmConfig(null);
+    }
+
+    public byte[] toByteArray(){
+        ByteBuffer b = ByteBuffer.allocate(4 * PROPERTIES_NUMBER);
+        for(int i = 0; i < PROPERTIES_NUMBER; i ++){
+            b = b.putInt(properties[i]);
+        }
+        return b.array();
+
+    }
+
+    public static FarmConfig fromByteArray(byte[] configBytes) {
+        if(configBytes.length != 4 * PROPERTIES_NUMBER){return null;}
+        ByteBuffer b = ByteBuffer.wrap(configBytes);
+        int[] array = new int[PROPERTIES_NUMBER];
+        for(int i = 0; i < PROPERTIES_NUMBER; i ++){
+            array[i] = b.getInt(configBytes[i]);
+        }
+        return new FarmConfig(array);
+
     }
 
 //    public static FarmConfig fromIntent (Intent intent){

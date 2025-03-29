@@ -17,10 +17,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FarmRemoteControlApp"
+        android:hardwareAccelerated="false"
         tools:targetApi="31">
         <activity
-            android:name="ru.mipt.farmremotecontrolapp.StatisticsActivity"
+            android:name="ru.mipt.farmremotecontrolapp.RequestStatsActivity"
             android:exported="false" />
+        <activity
+            android:name="ru.mipt.farmremotecontrolapp.StatisticsActivity"
+            android:exported="false" >
+        </activity>
         <activity
             android:name="ru.mipt.farmremotecontrolapp.ConfigActivity"
             android:exported="true"
@@ -37,12 +42,6 @@
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name="ru.mipt.farmremotecontrolapp.BluetoothConnectionService"
-            android:enabled="false"
-            android:exported="false" />
-
         <activity
             android:name="ru.mipt.farmremotecontrolapp.MainActivity"
             android:exported="true">
