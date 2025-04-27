@@ -26,7 +26,7 @@ public class Statistics {
             "humidity",
             "water_level",
             "soil_moisture",
-            "double light_intensity"
+            "light_intensity"
     };
     static final int STATISTICS_COUNT = STATISTICS_NAMES.length;
     private double[][] data;
@@ -40,12 +40,11 @@ public class Statistics {
             parsed_properties[i] = json.getInt(Statistics.STATISTICS_NAMES[i]);
     }
 */
-    public static Statistics fromBytes(byte[] bytes){
+    public static Statistics fromBytes(byte[] bytes, int size){
         if(isNull(bytes)) return null;
         Statistics statistics = new Statistics();
-        if (bytes.length <= 4){return null;}
         ByteBuffer b = ByteBuffer.wrap(bytes);
-        statistics.length = b.getInt();
+        statistics.length = size;
 
         statistics.time = new long[statistics.length];
         statistics.data = new double[STATISTICS_COUNT][statistics.length];
@@ -67,17 +66,22 @@ public class Statistics {
         Statistics statistics = new Statistics();
         try {
             statistics.length = dIn.readInt();
+            Log.d(TAG, "RecordsNumber:" + statistics.length);
             statistics.time = new long[statistics.length];
             statistics.data = new double[STATISTICS_COUNT][statistics.length];
             for (int i = 0; i < statistics.length; i++) {
+                Log.d(TAG, "" + i);
                 statistics.time[i] = dIn.readLong();
+                Log.d(TAG, "Time:" + statistics.time[i]);
                 for (int j = 0; j < STATISTICS_COUNT; j++) {
                     statistics.data[j][i] = dIn.readDouble();
+                    Log.d(TAG, STATISTICS_NAMES[j] + ":" + statistics.data[j][i]);
                 }
             }
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
+        Log.d(TAG, "Stats received");
         return statistics;
     }
 

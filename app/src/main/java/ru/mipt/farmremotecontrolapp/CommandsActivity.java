@@ -27,7 +27,9 @@ public class CommandsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         LinearLayout linearLayout = findViewById(R.id.commands_layout);
+
         for(int i = 0; i < FarmCommand.COMMAND_COUNT; i ++){
             Button button = new Button(CommandsActivity.this);
             button.setText(FarmCommand.COMMAND_NAMES_RU[i]);
@@ -39,9 +41,11 @@ public class CommandsActivity extends AppCompatActivity {
                     FarmCommand farmCommand = new FarmCommand(num);
                     JSONObject jsonObject = farmCommand.toJson();
                     ControlMessage controlMessage = ControlMessage.sendCommandMessage(jsonObject);
-                    controlMessage.run();
+                    Thread thread = new Thread(controlMessage);
+                    thread.start();
                 }
             });
+            linearLayout.addView(button);
         }
 
     }

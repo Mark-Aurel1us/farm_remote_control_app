@@ -1,5 +1,6 @@
 package ru.mipt.farmremotecontrolapp;
 
+import static java.util.Objects.isNull;
 import static ru.mipt.farmremotecontrolapp.Utils.plotGraph;
 
 import android.content.Intent;
@@ -56,36 +57,38 @@ public class StatisticsActivity extends AppCompatActivity {
             controlMessage.setOnReceiveListener(new ControlMessage.OnReceiveListener() {
                 @Override
                 void receive(ControlMessage controlMessage) {
-                    statistics = controlMessage.getStats();
-
-                    StatisticsActivity.this.graphicView = new GraphicView(StatisticsActivity.this);
-                    LinearLayout linearLayout = findViewById(R.id.statistics_linear_layout);
-
-                    for(int i = 0; i < FarmCommand.COMMAND_COUNT; i++){
-                        Button button = new Button(StatisticsActivity.this);
-                        button.setText(FarmCommand.COMMAND_NAMES_RU[i]);
-                        int finalI = i;
-                        button.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                drawGraphic(statistics.getTime(), statistics.getData(finalI), Statistics.STATISTICS_NAMES[finalI]);
-                            }
-                        });
-                        linearLayout.addView(button);
-                    }
-
-                    linearLayout.addView(graphicView);
-
-
-
+                    StatisticsActivity.this.statistics = controlMessage.getStats();
+                    Log.d(TAG, "Stats is null:"+ isNull(controlMessage.getStats()));
+                    Log.d(TAG, "Stats is null:"+ isNull(StatisticsActivity.this.statistics));
+                    Log.d(TAG, "stats received by activity");
                 }
             });
+            Thread thread =  new Thread(controlMessage);
+            thread.start();
         } catch (JSONException e) {
             Log.d(TAG, e.getMessage());
         }
 
+        //
 
+        StatisticsActivity.this.graphicView = new GraphicView(StatisticsActivity.this);
+        LinearLayout linearLayout = findViewById(R.id.statistics_linear_layout);
 
+        for(int i = 0; i < Statistics.STATISTICS_COUNT; i++){
+            Button button = new Button(StatisticsActivity.this);
+            button.setText(Statistics.STATISTICS_NAMES[i]);
+            int finalI = i;
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(!isNull(statistics)) drawGraphic(statistics.getTime(), statistics.getData(finalI), Statistics.STATISTICS_NAMES[finalI]);
+                    else Log.d(TAG, "Null stats");
+                }
+            });
+            linearLayout.addView(button);
+        }
+
+        linearLayout.addView(graphicView);
 
     }
     void drawGraphic(long[] time, double[] data, String name){

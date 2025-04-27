@@ -155,7 +155,8 @@ public class ConfigActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ControlMessage controlMessage = ControlMessage.setConfigMessage(farmConfig.toJSONObject());
-                controlMessage.run();
+                Thread thread = new Thread(controlMessage);
+                thread.start();
             }
         });
 

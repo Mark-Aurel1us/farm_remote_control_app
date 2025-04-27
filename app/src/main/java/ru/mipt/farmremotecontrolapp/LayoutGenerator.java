@@ -20,6 +20,9 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.Date;
 
@@ -318,11 +321,13 @@ public class LayoutGenerator {
             datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                 @Override
                 public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                    LocalDate localDate = LocalDate.of(year, month, dayOfMonth);
-                    DateField.this.epochDay = localDate.toEpochDay();
+                    LocalDate localDate = LocalDate.of(year, month+1, dayOfMonth);
+                    LocalDateTime localDateTime = LocalDateTime.of(localDate, LocalTime.now());
+                    DateField.this.epochDay = localDateTime.toEpochSecond(ZoneOffset.of("+06:00"));
                 }
             });
             Button dateButton = new Button(context);
+            dateButton.setText(this.entry.fieldNameRu);
             dateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -442,9 +447,6 @@ public class LayoutGenerator {
         this.context = context;
         this.linearLayout = linearLayout;
         this.inputFields = toInputFields(configuration.entries, linearLayout, this);
-        for(int i = 0; i < inputFields.length; i ++){
-            inputFields[i].appendView(linearLayout);
-        }
     }
 
     public LayoutGenerator(Context context, LinearLayout linearLayout, LayoutGenerator.GeneratorConfigurationEntry[] generatorConfigurationEntries){
@@ -513,6 +515,7 @@ public class LayoutGenerator {
         for(int i = 0; i < inputFields.length; i ++){
             inputFields[i].putValueToJSON(jsonObject);
         }
+        Log.d(TAG, jsonObject.toString());
         return jsonObject;
     }
 

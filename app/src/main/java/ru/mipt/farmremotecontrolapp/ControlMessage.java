@@ -99,7 +99,8 @@ public class ControlMessage implements Runnable {
 
     private void sendJSON(DataOutputStream dOut, JSONObject json){
         try {
-            dOut.writeBytes(json.toString());
+            dOut.write(json.toString().getBytes());
+            //dOut.writeBytes(json.toString());
         } catch (Exception e){
             Log.d(TAG, e.getMessage());
         }
@@ -122,17 +123,24 @@ public class ControlMessage implements Runnable {
 
             switch (flag){
                 case SET_CONFIG:
+                    Log.d(TAG, sendMessage.toString());
                     sendJSON(dOut, sendMessage);
+                    dOut.writeBytes("\n");
                     break;
                 case GET_STATS:
                     sendJSON(dOut, sendMessage);
+                    dOut.writeBytes("\n");
                     this.stats = Statistics.fromStream(dIn);
                     break;
                 case SEND_COMMAND:
-
+                    sendJSON(dOut, sendMessage);
+                    dOut.writeBytes("\n");
             }
+
             // Close the socket
             socket.close();
+
+            if(!isNull(onReceiveListener)) onReceiveListener.receive(this);
 
         } catch (IOException ioException){
             Log.d(TAG, ioException.getMessage());
