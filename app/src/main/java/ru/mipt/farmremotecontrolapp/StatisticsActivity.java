@@ -22,12 +22,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.nio.ByteBuffer;
+
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
 
 public class StatisticsActivity extends AppCompatActivity {
     final static String TAG = "StatisticsActivity";
-    ImageView imageView;
+    //ImageView imageView;
     Statistics statistics = null;
+    GraphicView graphicView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,50 +46,52 @@ public class StatisticsActivity extends AppCompatActivity {
             return insets;
         });
 
-        this.imageView = new ImageView(StatisticsActivity.this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(1000,1000);
-        imageView.setLayoutParams(lp);
-        LinearLayout linearLayout = findViewById(R.id.statistics_linear_layout);
-        linearLayout.addView(imageView);
 
-//        Intent intent = getIntent();
-//        byte[] statsBytes = intent.getByteArrayExtra("stats");
-//        statistics = Statistics.fromBytes(statsBytes);
-        Button temperature_button = findViewById(R.id.temperature_button);
-        Button waterlevel_button = findViewById(R.id.waterlevel_button);
-        temperature_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawGraphic(new long[]{10000, 20000, 30000, 40000, 50000}, new float[]{1, 4, 3, 7, 6}, "Temperature");
-            }
-        });
-        waterlevel_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawGraphic(new long[]{10000, 20000, 30000}, new float[]{1, 3, 2}, "Water level");
-            }
-        });
+
+        Intent intent = getIntent();
+        String jsonString = intent.getStringExtra("json");
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            ControlMessage controlMessage = ControlMessage.getStatisticsMessage(json);
+            controlMessage.setOnReceiveListener(new ControlMessage.OnReceiveListener() {
+                @Override
+                void receive(ControlMessage controlMessage) {
+                    statistics = controlMessage.getStats();
+
+                    StatisticsActivity.this.graphicView = new GraphicView(StatisticsActivity.this);
+                    LinearLayout linearLayout = findViewById(R.id.statistics_linear_layout);
+
+                    for(int i = 0; i < FarmCommand.COMMAND_COUNT; i++){
+                        Button button = new Button(StatisticsActivity.this);
+                        button.setText(FarmCommand.COMMAND_NAMES_RU[i]);
+                        int finalI = i;
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                drawGraphic(statistics.getTime(), statistics.getData(finalI), Statistics.STATISTICS_NAMES[finalI]);
+                            }
+                        });
+                        linearLayout.addView(button);
+                    }
+
+                    linearLayout.addView(graphicView);
+
+
+
+                }
+            });
+        } catch (JSONException e) {
+            Log.d(TAG, e.getMessage());
+        }
+
+
+
 
     }
-    void drawGraphic(long[] time, float[] data, String name){
+    void drawGraphic(long[] time, double[] data, String name){
         try {
-            Bitmap bitmap = plotGraph(time, data, "Time", name, 1000, 1000);
-            imageView.setImageBitmap(bitmap);
-            imageView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-//            imageView.setImageBitmap(bitmap);
-//            imageView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    imageView.setImageBitmap(bitmap);
-//                }
-//            });
-            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
-            findViewById(R.id.statistics_linear_layout).setBackground(drawable);
-
-            imageView.setVisibility(View.VISIBLE);
-            //Log.d(TAG,imageView.toString());
-            //Log.d(TAG,bitmap.toString());
-            //Log.d(TAG,""+linearLayout.getChildCount());
+            graphicView.setGraphicParams(time, data, "Time", name);
+            graphicView.callOnClick();
         } catch (Exception e){
             Log.d(TAG,"Oh no!");
             Log.d(TAG,e.getMessage());

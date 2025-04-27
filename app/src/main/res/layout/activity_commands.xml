@@ -5,11 +5,11 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.mipt.farmremotecontrolapp.StatisticsActivity">
+    tools:context="ru.mipt.farmremotecontrolapp.CommandsActivity">
 
     <LinearLayout
-        android:id="@+id/statistics_linear_layout"
+        android:id="@+id/commands_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"/>
+        android:orientation="vertical"></LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

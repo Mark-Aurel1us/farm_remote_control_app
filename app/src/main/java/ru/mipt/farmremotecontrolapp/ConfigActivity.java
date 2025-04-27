@@ -71,7 +71,7 @@ public class ConfigActivity extends AppCompatActivity {
                 temporaryFarmConfig = FarmConfig.fromFile(path);
             }
         } else {
-            temporaryFarmConfig = FarmConfig.fromByteArray(configBytes);
+            //temporaryFarmConfig = FarmConfig.fromByteArray(configBytes);
         }
         LinearLayout linear_vertical_container = findViewById(R.id.linear_vertical_container);
 
@@ -150,6 +150,14 @@ public class ConfigActivity extends AppCompatActivity {
             }
         });
 
+        Button buttonUploadConfig = findViewById(R.id.button_upload_config);
+        buttonUploadConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ControlMessage controlMessage = ControlMessage.setConfigMessage(farmConfig.toJSONObject());
+                controlMessage.run();
+            }
+        });
 
     }
 

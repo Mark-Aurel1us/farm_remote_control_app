@@ -26,10 +26,35 @@ import org.json.*;
 
 public class FarmConfig {
     private static final String TAG = "FarmConfig";
-    static final String[] PROPERTIES_NAMES = {"targetTemperature", "waterDelay", "water", "lightDelay", "lightTime"};
-    static final int[] PROPERTIES_MIN = {0,0,0,0,0};
-    static final int[] PROPERTIES_MAX = {100,100,100,100,100};
+    //TODO: objectify
+    static final String[] PROPERTIES_NAMES = {
+            "pump_interval_days",
+            "pump_start_hours",
+            "pump_start_minutes",
+            "pump_volume_ml",
+            "heatlamp_target_temp",
+            "growlight_on_hours",
+            "growlight_on_minutes",
+            "growlight_off_hours",
+            "growlight_off_minutes",
+    };
+    static final int[] PROPERTIES_MIN = {0,0,0,0,0,0,0,0,0};
+    static final int[] PROPERTIES_MAX = {100,100,100,100,100,100,100,100,100};
     static final int PROPERTIES_NUMBER = PROPERTIES_NAMES.length;
+
+    public class Property {
+        public Property(JSONObject jsonObject){
+        }
+
+        public JSONObject toJSONObject(){
+            return null;
+        }
+
+    }
+
+    public class Actuator {
+
+    }
 
     private int[] properties;
 
@@ -46,6 +71,19 @@ public class FarmConfig {
         }
     }
 
+    public JSONObject toJSONObject(){
+        try {
+            JSONObject jsonObject = new JSONObject();
+            for(int i = 0; i < PROPERTIES_NUMBER; i ++){
+                jsonObject.put(PROPERTIES_NAMES[i], properties[i]);
+            }
+            return jsonObject;
+        } catch (JSONException e){
+            Log.d(TAG, e.getMessage());
+            return null;
+        }
+    }
+
 
     public static FarmConfig fromFile(Path path){
         if(isNull(path)){return new FarmConfig(null);}
@@ -53,8 +91,6 @@ public class FarmConfig {
             File f = path.toFile();
             String pathString = f.getAbsolutePath().replace("/document/raw:", "");
             f = new File(pathString);
-//            FileInputStream fileInputStream = new FileInputStream(f);
-//            Log.d(TAG, "Opened file stream");
             FileReader fileReader = new FileReader(f);
             Scanner in = new Scanner(fileReader);
             StringBuilder sb = new StringBuilder();
@@ -63,7 +99,6 @@ public class FarmConfig {
             }
             in.close();
             String contents = sb.toString();
-            Log.d(TAG,"Contents:"+contents);
             JSONObject json = new JSONObject(contents);
             int[] parsed_properties = new int[FarmConfig.PROPERTIES_NUMBER];
             for(int i = 0; i < FarmConfig.PROPERTIES_NUMBER; i ++ ){
@@ -88,8 +123,9 @@ public class FarmConfig {
         return b.array();
 
     }
-
+/*
     public static FarmConfig fromByteArray(byte[] configBytes) {
+        if(isNull(configBytes)) return null;
         if(configBytes.length != 4 * PROPERTIES_NUMBER){return null;}
         ByteBuffer b = ByteBuffer.wrap(configBytes);
         int[] array = new int[PROPERTIES_NUMBER];
@@ -98,7 +134,7 @@ public class FarmConfig {
         }
         return new FarmConfig(array);
 
-    }
+    }*/
 
 //    public static FarmConfig fromIntent (Intent intent){
 //        return fromFile(pathFromIntent(intent));

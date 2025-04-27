@@ -32,9 +32,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"Sending intent...");
-                Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
+                //Intent intent = new Intent(MainActivity.this, StatisticsActivity.class);
+                Intent intent = new Intent(MainActivity.this, RequestStatsActivity.class);
                 MainActivity.this.startActivity(intent);
                 Log.d(TAG,"Intent sent");
+            }
+        });
+        Button button_set_config = findViewById(R.id.set_config_button);
+        button_set_config.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ConfigActivity.class);
+                MainActivity.this.startActivity(intent);
             }
         });
     }
