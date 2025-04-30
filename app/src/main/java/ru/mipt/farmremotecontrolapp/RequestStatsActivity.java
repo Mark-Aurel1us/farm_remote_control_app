@@ -15,6 +15,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
 
 public class RequestStatsActivity extends AppCompatActivity {
@@ -37,9 +40,13 @@ public class RequestStatsActivity extends AppCompatActivity {
         LinearLayout linearLayout = findViewById(R.id.request_stats_layout);
 
         LayoutGenerator.GeneratorConfigurationEntry[] generatorConfigurationEntries = {
+                //LayoutGenerator.dateTimeEntryFabric("test_field", "Тестовое поле", LocalDateTime.now().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalDate().toEpochDay()),
                 LayoutGenerator.titleEntryFabric("Введите период для отправки данных"),
-                LayoutGenerator.dateEntryFabric("unix_time_from", "Начиная с:"),
-                LayoutGenerator.dateEntryFabric("unix_time_to", "До:"),
+
+                LayoutGenerator.dateTimeEntryFabric("unix_time_from", "Начиная с:", LocalDateTime.now().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalDate().minusDays(1).toEpochDay()),
+                LayoutGenerator.dateTimeEntryFabric("unix_time_to", "До:", LocalDateTime.now().toLocalTime().plusHours(1).toSecondOfDay(), LocalDateTime.now().toLocalDate().toEpochDay()),
+                //LayoutGenerator.dateEntryFabric("unix_time_from", ""),
+                //LayoutGenerator.dateEntryFabric("unix_time_to", ""),
         };
 
         layoutGenerator = new LayoutGenerator(RequestStatsActivity.this, linearLayout , new LayoutGenerator.GeneratorConfiguration(generatorConfigurationEntries));

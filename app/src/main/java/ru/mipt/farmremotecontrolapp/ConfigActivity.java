@@ -1,32 +1,18 @@
 package ru.mipt.farmremotecontrolapp;
 
 import static android.os.Environment.isExternalStorageManager;
-import static androidx.core.app.ActivityCompat.startActivityForResult;
 import static java.util.Objects.isNull;
 import static ru.mipt.farmremotecontrolapp.Utils.pathFromIntent;
-import static ru.mipt.farmremotecontrolapp.Utils.setViewWeight;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
-import android.text.InputType;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AbsListView;
-import android.widget.AbsSeekBar;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toolbar;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,11 +21,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.ui.AppBarConfiguration;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
-import androidx. core. app. ActivityCompat;
 
 public class ConfigActivity extends AppCompatActivity {
 
@@ -50,6 +34,8 @@ public class ConfigActivity extends AppCompatActivity {
     public static final int ASK_FILES_PERMISSION_REQUEST_CODE = 1;
     private static final String TAG = "ConfigActivity";
 
+    /*
+
     TextView[] tw = new TextView[FarmConfig.PROPERTIES_NUMBER];
     SeekBar[] sb = new SeekBar[FarmConfig.PROPERTIES_NUMBER];
     EditText[] et = new EditText[FarmConfig.PROPERTIES_NUMBER];
@@ -57,12 +43,30 @@ public class ConfigActivity extends AppCompatActivity {
     FarmConfig farmConfig = FarmConfig.fromFile(null);
 
 
+     */
+    LayoutGenerator layoutGenerator = null;
+
     //@RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FarmConfig temporaryFarmConfig = farmConfig;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
+
+        LayoutGenerator.GeneratorConfiguration generatorConfiguration = new LayoutGenerator.GeneratorConfiguration(new LayoutGenerator.GeneratorConfigurationEntry[]{
+                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0, 100, 2),
+                LayoutGenerator.timeEntryFabric("pump_start", "pump_start"),
+                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 100, 2),
+                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 0, 100, 2),
+                LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on"),
+                LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off"),
+        });
+
+        LinearLayout linearLayout = findViewById(R.id.linear_vertical_container_config);
+        if(isNull(linearLayout)){Log.d(TAG, "LinearLayout is null");}
+        layoutGenerator = new LayoutGenerator(ConfigActivity.this, linearLayout, generatorConfiguration);
+        /*
+        FarmConfig temporaryFarmConfig = farmConfig;
+
         Intent intent = getIntent();
         byte[] configBytes = intent.getByteArrayExtra("config");
         if(isNull(configBytes)) {
@@ -137,7 +141,7 @@ public class ConfigActivity extends AppCompatActivity {
             linear_vertical_container.addView(linearLayout[n]);
         }
         loadConfig(temporaryFarmConfig);
-
+*/
         Button buttonOpenFile = findViewById(R.id.button_open_file);
         //Button buttonUploadConfig = findViewById(R.id.button_upload_config);
         buttonOpenFile.setOnClickListener(new View.OnClickListener() {
@@ -154,14 +158,15 @@ public class ConfigActivity extends AppCompatActivity {
         buttonUploadConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ControlMessage controlMessage = ControlMessage.setConfigMessage(farmConfig.toJSONObject());
-                Thread thread = new Thread(controlMessage);
+                //ControlMessage controlMessage = ControlMessage.setConfigMessage(farmConfig.toJSONObject());
+                ControlMessage controlMessage = ControlMessage.setConfigMessage(layoutGenerator.getJSONObject());
+                        Thread thread = new Thread(controlMessage);
                 thread.start();
             }
         });
 
     }
-
+/*
     private void loadConfig(FarmConfig config){
 //        new Thread(() -> {
             if (isNull(config)) {
@@ -208,7 +213,7 @@ public class ConfigActivity extends AppCompatActivity {
                 });
             }
 //        }).run();
-    }
+    }*/
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -217,8 +222,9 @@ public class ConfigActivity extends AppCompatActivity {
         if(requestCode == OPEN_CONFIG_REQUEST_CODE && resultCode == RESULT_OK) {
             Path path = pathFromIntent(data);
             if(!hasFilePermission()){return;}
-            FarmConfig config = FarmConfig.fromFile(path);
-            loadConfig(config);
+            //FarmConfig config = FarmConfig.fromFile(path);
+            //loadConfig(config);
+            layoutGenerator.setJSONObject(Utils.jsonFromFile(path));
         }
         if(requestCode == ASK_FILES_PERMISSION_REQUEST_CODE){
             Log.d(TAG, "Asked for file permission");

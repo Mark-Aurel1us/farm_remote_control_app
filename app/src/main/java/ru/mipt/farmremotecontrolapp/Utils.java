@@ -15,13 +15,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import android.graphics.Color;
 import android.graphics.Paint;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Scanner;
 
 public class Utils {
     static final String TAG = "Utils";
@@ -40,6 +47,30 @@ public class Utils {
             return config_path;
         } catch (Exception ignored){}
         return null;
+    }
+
+    public static JSONObject jsonFromFile(Path path){
+        if(isNull(path)){return new JSONObject();}
+        try {
+            File f = path.toFile();
+            String pathString = f.getAbsolutePath().replace("/document/raw:", "");
+            f = new File(pathString);
+            FileReader fileReader = new FileReader(f);
+            Scanner in = new Scanner(fileReader);
+            StringBuilder sb = new StringBuilder();
+            while(in.hasNext()) {
+                sb.append(in.next());
+            }
+            in.close();
+            String contents = sb.toString();
+            JSONObject json = new JSONObject(contents);
+            return json;
+        } catch (IOException e) {
+            Log.d(TAG,"Error reading JSON file: " + e.getMessage());
+        } catch (JSONException e) {
+            Log.d(TAG,"Error parsing JSON file");
+        }
+        return new JSONObject();
     }
 
     public static Bitmap plotGraph(long[] timestamps, float[] values,

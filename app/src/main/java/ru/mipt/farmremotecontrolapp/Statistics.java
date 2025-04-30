@@ -70,12 +70,12 @@ public class Statistics {
             statistics.time = new long[statistics.length];
             statistics.data = new double[STATISTICS_COUNT][statistics.length];
             for (int i = 0; i < statistics.length; i++) {
-                Log.d(TAG, "" + i);
+                //Log.d(TAG, "" + i);
                 statistics.time[i] = dIn.readLong();
-                Log.d(TAG, "Time:" + statistics.time[i]);
+                //Log.d(TAG, "Time:" + statistics.secondOfDay[i]);
                 for (int j = 0; j < STATISTICS_COUNT; j++) {
                     statistics.data[j][i] = dIn.readDouble();
-                    Log.d(TAG, STATISTICS_NAMES[j] + ":" + statistics.data[j][i]);
+                    //Log.d(TAG, STATISTICS_NAMES[j] + ":" + statistics.data[j][i]);
                 }
             }
         } catch (Exception e) {

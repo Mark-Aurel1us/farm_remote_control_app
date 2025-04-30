@@ -1,10 +1,14 @@
 package ru.mipt.farmremotecontrolapp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +21,7 @@ import ru.mipt.ru.mipt.farmremotecontrolapp.R;
 public class MainActivity extends AppCompatActivity {
     final static String TAG = "MainActivity";
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,5 +60,21 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.startActivity(intent);
             }
         });
+/*
+        LinearLayout linearLayout = findViewById(R.id.dfgfdhg);
+        linearLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d(TAG, "MotionEvent");
+                if(event.getAction() == MotionEvent.ACTION_POINTER_DOWN){
+                    v.setBackgroundColor(Color.BLACK);
+                } else if (event.getAction() == MotionEvent.ACTION_MOVE){
+                    v.setBackgroundColor(Color.RED);
+                } else {
+                    v.setBackgroundColor(Color.WHITE);
+                }
+                return true;
+            }
+        });*/
     }
 }

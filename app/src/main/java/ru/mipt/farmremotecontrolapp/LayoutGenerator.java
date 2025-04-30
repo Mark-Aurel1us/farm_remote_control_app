@@ -6,6 +6,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -22,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.Date;
@@ -44,6 +46,9 @@ public class LayoutGenerator {
         //public String defaultString = null;
         //public int defaultInt;
         public GeneratorConfigurationEntry[] children = null;
+        public int digits = 0;
+        public long secondOfDay = 0;
+        public long epochDay = 0;
         //public GeneratorConfiguration child = null;
     }
 
@@ -54,8 +59,16 @@ public class LayoutGenerator {
         TITLE,
         DATE,
         ENCLOSING,
+        DATE_TIME,
         //TEXT,
         //BUTTON
+    }
+
+    enum JSON_FORMATS {
+        EPOCH_DATE,
+        UNIX_TIME_OF_DATE,
+        UNIX_TIME,
+        STRING_TIME,
     }
 
     public static final String TAG = "LayoutGenerator";
@@ -87,14 +100,23 @@ public class LayoutGenerator {
     }
 
     public class NumberRunnerField extends InputField{
+        int digits;
         int number;
         TextView tw;
         SeekBar sb;
         EditText et;
 
+        private int pow10Digits(){
+            int ptd = 1;
+            for(int i = 0; i < digits; i++){
+                ptd *=10;
+            }
+            return ptd;
+        }
+
         public NumberRunnerField(LayoutGenerator layoutGenerator, GeneratorConfigurationEntry entry) {
             super(layoutGenerator, entry);
-
+            digits = entry.digits;
         }
 
         public void checkValidity(){
@@ -108,7 +130,7 @@ public class LayoutGenerator {
         public void putValueToJSON(JSONObject jsonObject) {
             //TODO
             try {
-                jsonObject.put(fieldName, number);
+                jsonObject.put(fieldName, ((float)number)/pow10Digits());
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
@@ -116,17 +138,19 @@ public class LayoutGenerator {
 
         @Override
         public void appendView(LinearLayout linearLayout){
-            LinearLayout horisontalLinearLayout = new LinearLayout(layoutGenerator.context);
+            LinearLayout horisontalLinearLayout = new LinearLayout(context);
             horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
             horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-            tw = new TextView(layoutGenerator.context);
-            sb = new SeekBar(layoutGenerator.context);
-            et = new EditText(layoutGenerator.context);
+            tw = new TextView(context);
+            sb = new SeekBar(context);
+            et = new EditText(context);
 
+            tw.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
+            sb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
+            et.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
 
             tw.setText(fieldName);
-
             sb.setProgress(number);
             et.setText("" + number);
 
@@ -136,7 +160,7 @@ public class LayoutGenerator {
 
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                    editText.setText(String.valueOf(i));
+                    editText.setText(String.valueOf(((float)i)/pow10Digits()));
                     numberInputField.number = i;
                 }
                 @Override
@@ -153,10 +177,11 @@ public class LayoutGenerator {
 
                 @Override
                 public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                    numberInputField.number = (int) Integer.valueOf(textView.getText().toString());
+                    float temp = (float) Float.valueOf(textView.getText().toString());
+                    numberInputField.number = (int)(temp * pow10Digits());
                     numberInputField.checkValidity();
-                    seekBar.setProgress((int) Integer.valueOf(textView.getText().toString()));
-                    et.setText(String.valueOf(numberInputField.number));
+                    seekBar.setProgress(number);
+                    et.setText(String.valueOf(((float)numberInputField.number)/pow10Digits()));
                     return false;
                 }
             });
@@ -241,7 +266,7 @@ public class LayoutGenerator {
             timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
                 @Override
                 public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-                    TimeField.this.time = (hourOfDay >= 10 ? "" : "0") + hourOfDay + ":" + (minute >= 10 ? "" : "0") + minute;
+                    TimeField.this.secondOfDay = (hourOfDay >= 10 ? "" : "0") + hourOfDay + ":" + (minute >= 10 ? "" : "0") + minute;
                 }
             });
             linearLayout.addView(timePicker);*/
@@ -293,7 +318,6 @@ public class LayoutGenerator {
 
     public class DateField extends InputField{
         DatePickerDialog datePickerDialog;
-
         long epochDay;
 
         public DateField(LayoutGenerator layoutGenerator, GeneratorConfigurationEntry entry) {
@@ -323,7 +347,7 @@ public class LayoutGenerator {
                 public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                     LocalDate localDate = LocalDate.of(year, month+1, dayOfMonth);
                     LocalDateTime localDateTime = LocalDateTime.of(localDate, LocalTime.now());
-                    DateField.this.epochDay = localDateTime.toEpochSecond(ZoneOffset.of("+06:00"));
+                    DateField.this.epochDay = localDateTime.toEpochSecond(ZoneOffset.of("+03:00"));
                 }
             });
             Button dateButton = new Button(context);
@@ -340,6 +364,91 @@ public class LayoutGenerator {
 
         @Override
         public void setJSON(JSONObject jsonObject) {
+        }
+    }
+
+    public  class DateTimeField extends InputField {
+
+        DatePickerDialog datePickerDialog;
+        TimePickerDialog timePickerDialog;
+        long epochDay, secondOfDay;
+
+        public DateTimeField(LayoutGenerator layoutGenerator, GeneratorConfigurationEntry entry) {
+            super(layoutGenerator, entry);
+            secondOfDay = entry.secondOfDay;
+            epochDay = entry.epochDay;
+        }
+
+        @Override
+        public void checkValidity() {
+
+        }
+
+        @Override
+        public void putValueToJSON(JSONObject jsonObject) {
+            try {
+                jsonObject.put(fieldName, LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.ofSecondOfDay(secondOfDay)).toEpochSecond(ZoneOffset.of("+03:00")));
+            } catch (JSONException e) {
+            }
+        }
+
+        @Override
+        public void appendView(LinearLayout linearLayout) {
+            datePickerDialog = new DatePickerDialog(context);
+            datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                    LocalDate localDate = LocalDate.of(year, month+1, dayOfMonth);
+                    DateTimeField.this.epochDay = localDate.toEpochDay();
+                }
+            });
+            LocalDateTime localDateTime = LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.ofSecondOfDay(secondOfDay));
+            datePickerDialog.updateDate(localDateTime.getYear(), localDateTime.getMonthValue() - 1, localDateTime.getDayOfMonth());
+
+            Button dateButton = new Button(context);
+            dateButton.setText("date");
+            dateButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    datePickerDialog.show();
+                }
+            });
+
+            TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                    DateTimeField.this.secondOfDay = LocalTime.of(hourOfDay, minute).toSecondOfDay();
+                }
+            };
+            timePickerDialog = new TimePickerDialog(context, onTimeSetListener, 0, 0, true);
+            timePickerDialog.updateTime(localDateTime.getHour(), localDateTime.getMinute());
+
+            LinearLayout horisontalLinearLayout = new LinearLayout(context);
+            horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
+            horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            TextView tw = new TextView(context);
+            Button timeButton = new Button(context);
+
+            tw.setText(entry.fieldNameRu);
+
+            timeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    timePickerDialog.show();
+                }
+            });
+            timeButton.setText("time");
+
+            horisontalLinearLayout.addView(tw);
+            horisontalLinearLayout.addView(dateButton);
+            horisontalLinearLayout.addView(timeButton);
+
+            linearLayout.addView(horisontalLinearLayout);
+        }
+
+        @Override
+        public void setJSON(JSONObject jsonObject) {//TODO
         }
     }
 
@@ -392,13 +501,14 @@ public class LayoutGenerator {
     }
 
 
-    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, int min, int max){//TODO
+    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, int min, int max, int digits){//TODO
         GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
         entry.fieldType = FIELD_TYPES.NUMBER_RUNNER;
         entry.min = min;
         entry.max = max;
+        entry.digits = digits;
         return entry;
     }
 
@@ -433,6 +543,15 @@ public class LayoutGenerator {
         return entry;
     }
 
+    static GeneratorConfigurationEntry dateTimeEntryFabric(String fieldName, String fieldNameRu, long defaultTime, long defaultDate){
+        GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
+        entry.fieldName = fieldName;
+        entry.fieldNameRu = fieldNameRu;
+        entry.fieldType = FIELD_TYPES.DATE_TIME;
+        entry.secondOfDay = defaultTime;
+        entry.epochDay = defaultDate;
+        return entry;
+    }
     //public class NumberField extends InputField{} //unused
 
 
@@ -448,7 +567,7 @@ public class LayoutGenerator {
         this.linearLayout = linearLayout;
         this.inputFields = toInputFields(configuration.entries, linearLayout, this);
     }
-
+/*
     public LayoutGenerator(Context context, LinearLayout linearLayout, LayoutGenerator.GeneratorConfigurationEntry[] generatorConfigurationEntries){
         this.context = context;
         this.linearLayout = linearLayout;
@@ -478,7 +597,7 @@ public class LayoutGenerator {
             inputFields[i].appendView(linearLayout);
         }
         //TODO
-    }
+    }*/
 
     public InputField[] toInputFields(LayoutGenerator.GeneratorConfigurationEntry[] entries, LinearLayout linearLayout, LayoutGenerator layoutGenerator){
         InputField[] inputFields = new InputField[entries.length];
@@ -499,6 +618,9 @@ public class LayoutGenerator {
                     break;
                 case ENCLOSING:
                     inputFields[i] = new EnclosingField(layoutGenerator, entries[i]);
+                    break;
+                case DATE_TIME:
+                    inputFields[i] = new DateTimeField(layoutGenerator, entries[i]);
                     break;
                 default:
                     break;

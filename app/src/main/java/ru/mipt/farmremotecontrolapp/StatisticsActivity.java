@@ -16,6 +16,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,14 +31,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
+
+//import  com.oracle.common.base.Timeout;
 
 public class StatisticsActivity extends AppCompatActivity {
     final static String TAG = "StatisticsActivity";
     //ImageView imageView;
     Statistics statistics = null;
     GraphicView graphicView;
+    TableLayout table;
+    ScheduledExecutorService scheduler;
+
+    int lastGraph = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,13 +74,14 @@ public class StatisticsActivity extends AppCompatActivity {
                 @Override
                 void receive(ControlMessage controlMessage) {
                     StatisticsActivity.this.statistics = controlMessage.getStats();
-                    Log.d(TAG, "Stats is null:"+ isNull(controlMessage.getStats()));
-                    Log.d(TAG, "Stats is null:"+ isNull(StatisticsActivity.this.statistics));
-                    Log.d(TAG, "stats received by activity");
+                    drawGraphic(statistics.getTime(), statistics.getData(lastGraph), Statistics.STATISTICS_NAMES[lastGraph]);
                 }
             });
-            Thread thread =  new Thread(controlMessage);
-            thread.start();
+
+            scheduler = Executors.newScheduledThreadPool(1);
+            ScheduledFuture<?> handle = scheduler.scheduleWithFixedDelay(controlMessage, 10, 10, java.util.concurrent.TimeUnit.SECONDS);
+
+
         } catch (JSONException e) {
             Log.d(TAG, e.getMessage());
         }
@@ -82,7 +99,7 @@ public class StatisticsActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if(!isNull(statistics)) drawGraphic(statistics.getTime(), statistics.getData(finalI), Statistics.STATISTICS_NAMES[finalI]);
-                    else Log.d(TAG, "Null stats");
+                    StatisticsActivity.this.lastGraph = finalI;
                 }
             });
             linearLayout.addView(button);
@@ -90,14 +107,59 @@ public class StatisticsActivity extends AppCompatActivity {
 
         linearLayout.addView(graphicView);
 
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        linearLayout.addView(scrollView);
+        table = new TableLayout(this);
+        table.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        scrollView.addView(table);
+
+
     }
     void drawGraphic(long[] time, double[] data, String name){
         try {
-            graphicView.setGraphicParams(time, data, "Time", name);
-            graphicView.callOnClick();
+            StatisticsActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    graphicView.setGraphicParams(time, data, "Time", name);
+                    graphicView.callOnClick();
+
+                    table.removeAllViews();
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
+                    for(int i = 0; i < time.length; i ++){
+                        TableRow tableRow = new TableRow(StatisticsActivity.this);
+                        LinearLayout horisontalLinearLayout = new LinearLayout(StatisticsActivity.this);
+                        horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
+                        //horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                        TextView timeText = new TextView(StatisticsActivity.this);
+                        timeText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+                        timeText.setText(sdf.format(new Date(time[i] * 1000)));
+                        horisontalLinearLayout.addView(timeText);
+
+                        TextView dataText = new TextView(StatisticsActivity.this);
+                        dataText.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+                        dataText.setText(String.valueOf(data[i]));
+                        horisontalLinearLayout.addView(dataText);
+
+                        tableRow.addView(horisontalLinearLayout);
+                        table.addView(tableRow);
+                    }
+                }
+            });
+
+
+
         } catch (Exception e){
             Log.d(TAG,"Oh no!");
             Log.d(TAG,e.getMessage());
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        scheduler.shutdown();
+        super.onDestroy();
     }
 }
