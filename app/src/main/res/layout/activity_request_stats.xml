@@ -19,13 +19,6 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button_toggle_tofrom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Select time from..." />
-
-            <Button
                 android:id="@+id/button_submit_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

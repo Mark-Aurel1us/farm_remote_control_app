@@ -1,7 +1,6 @@
 package ru.mipt.farmremotecontrolapp;
 
 import static java.util.Objects.isNull;
-import static ru.mipt.farmremotecontrolapp.Utils.plotGraph;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -49,6 +48,8 @@ public class StatisticsActivity extends AppCompatActivity {
     GraphicView graphicView;
     TableLayout table;
     ScheduledExecutorService scheduler;
+
+    boolean showTable = false;
 
     int lastGraph = 0;
 
@@ -105,7 +106,21 @@ public class StatisticsActivity extends AppCompatActivity {
             linearLayout.addView(button);
         }
 
+        Button button = new Button(StatisticsActivity.this);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((Button)v).setText(StatisticsActivity.this.showTable ? "Show full table" : "Hide full table");
+                drawGraphic(statistics.getTime(), statistics.getData(lastGraph), Statistics.STATISTICS_NAMES[lastGraph]);
+                StatisticsActivity.this.showTable = !StatisticsActivity.this.showTable;
+
+            }
+        });
+        button.setText("Show full table");
+
         linearLayout.addView(graphicView);
+
+        linearLayout.addView(button);
 
         ScrollView scrollView = new ScrollView(this);
         scrollView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -117,6 +132,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
 
     }
+
     void drawGraphic(long[] time, double[] data, String name){
         try {
             StatisticsActivity.this.runOnUiThread(new Runnable() {
@@ -127,7 +143,9 @@ public class StatisticsActivity extends AppCompatActivity {
 
                     table.removeAllViews();
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
-                    for(int i = 0; i < time.length; i ++){
+                    int len = time.length;
+                    if(!showTable) {len = 10;}
+                    for (int i = 0; i < time.length && i < len; i++) {
                         TableRow tableRow = new TableRow(StatisticsActivity.this);
                         LinearLayout horisontalLinearLayout = new LinearLayout(StatisticsActivity.this);
                         horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);

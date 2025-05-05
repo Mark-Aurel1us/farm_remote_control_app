@@ -3,6 +3,7 @@ package ru.mipt.farmremotecontrolapp;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -23,8 +24,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Date;
 
@@ -46,7 +47,7 @@ public class LayoutGenerator {
         //public String defaultString = null;
         //public int defaultInt;
         public GeneratorConfigurationEntry[] children = null;
-        public int digits = 0;
+        public float multiplier = 1.0f;
         public long secondOfDay = 0;
         public long epochDay = 0;
         //public GeneratorConfiguration child = null;
@@ -70,6 +71,19 @@ public class LayoutGenerator {
         UNIX_TIME,
         STRING_TIME,
     }
+    /*
+    static class InputFieldBehaviour {
+        enum behaviour {
+
+        }
+        boolean[] behaviours = new boolean[behaviour.values().length];
+
+        InputFieldBehaviour(behaviour[] bs){
+            for(behaviour b: bs){
+                behaviours[(int)b] = true;
+            }
+        }
+    }*/
 
     public static final String TAG = "LayoutGenerator";
 
@@ -100,23 +114,15 @@ public class LayoutGenerator {
     }
 
     public class NumberRunnerField extends InputField{
-        int digits;
+        float multiplier;
         int number;
         TextView tw;
         SeekBar sb;
         EditText et;
 
-        private int pow10Digits(){
-            int ptd = 1;
-            for(int i = 0; i < digits; i++){
-                ptd *=10;
-            }
-            return ptd;
-        }
-
         public NumberRunnerField(LayoutGenerator layoutGenerator, GeneratorConfigurationEntry entry) {
             super(layoutGenerator, entry);
-            digits = entry.digits;
+            multiplier = entry.multiplier;
         }
 
         public void checkValidity(){
@@ -130,7 +136,7 @@ public class LayoutGenerator {
         public void putValueToJSON(JSONObject jsonObject) {
             //TODO
             try {
-                jsonObject.put(fieldName, ((float)number)/pow10Digits());
+                jsonObject.put(fieldName, ((float)number)*multiplier);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
@@ -146,6 +152,8 @@ public class LayoutGenerator {
             sb = new SeekBar(context);
             et = new EditText(context);
 
+            et.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
             tw.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
             sb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
             et.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
@@ -160,7 +168,7 @@ public class LayoutGenerator {
 
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                    editText.setText(String.valueOf(((float)i)/pow10Digits()));
+                    editText.setText(String.valueOf(((float)i)*multiplier));
                     numberInputField.number = i;
                 }
                 @Override
@@ -178,10 +186,10 @@ public class LayoutGenerator {
                 @Override
                 public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                     float temp = (float) Float.valueOf(textView.getText().toString());
-                    numberInputField.number = (int)(temp * pow10Digits());
+                    numberInputField.number = (int)(temp * multiplier);
                     numberInputField.checkValidity();
                     seekBar.setProgress(number);
-                    et.setText(String.valueOf(((float)numberInputField.number)/pow10Digits()));
+                    et.setText(String.valueOf(((float)numberInputField.number)*multiplier));
                     return false;
                 }
             });
@@ -394,19 +402,23 @@ public class LayoutGenerator {
 
         @Override
         public void appendView(LinearLayout linearLayout) {
+            DateTimeFormatter hmFormat = DateTimeFormatter.ofPattern("HH:mm");
+            DateTimeFormatter ymdFormat = DateTimeFormatter.ofPattern("d MMM uuuu");
+
+            Button dateButton = new Button(context);
             datePickerDialog = new DatePickerDialog(context);
             datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
                 @Override
                 public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                     LocalDate localDate = LocalDate.of(year, month+1, dayOfMonth);
                     DateTimeField.this.epochDay = localDate.toEpochDay();
+                    dateButton.setText(LocalDate.of(year, month, dayOfMonth).format(ymdFormat));
                 }
             });
             LocalDateTime localDateTime = LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.ofSecondOfDay(secondOfDay));
             datePickerDialog.updateDate(localDateTime.getYear(), localDateTime.getMonthValue() - 1, localDateTime.getDayOfMonth());
+            dateButton.setText(LocalDate.of(localDateTime.getYear(), localDateTime.getMonthValue(), localDateTime.getDayOfMonth()).format(ymdFormat));
 
-            Button dateButton = new Button(context);
-            dateButton.setText("date");
             dateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -414,23 +426,22 @@ public class LayoutGenerator {
                 }
             });
 
+            Button timeButton = new Button(context);
+
             TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                     DateTimeField.this.secondOfDay = LocalTime.of(hourOfDay, minute).toSecondOfDay();
+                    timeButton.setText(LocalTime.of(hourOfDay, minute).format(hmFormat));
                 }
             };
             timePickerDialog = new TimePickerDialog(context, onTimeSetListener, 0, 0, true);
             timePickerDialog.updateTime(localDateTime.getHour(), localDateTime.getMinute());
+            timeButton.setText(LocalTime.of(localDateTime.getHour(), localDateTime.getMinute()).format(hmFormat));
 
             LinearLayout horisontalLinearLayout = new LinearLayout(context);
             horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
             horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-            TextView tw = new TextView(context);
-            Button timeButton = new Button(context);
-
-            tw.setText(entry.fieldNameRu);
 
             timeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -438,9 +449,13 @@ public class LayoutGenerator {
                     timePickerDialog.show();
                 }
             });
-            timeButton.setText("time");
 
-            horisontalLinearLayout.addView(tw);
+
+            TextView tw = new TextView(context);
+            tw.setText(entry.fieldNameRu);
+            timeButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+            dateButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
+            linearLayout.addView(tw);
             horisontalLinearLayout.addView(dateButton);
             horisontalLinearLayout.addView(timeButton);
 
@@ -501,14 +516,14 @@ public class LayoutGenerator {
     }
 
 
-    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, int min, int max, int digits){//TODO
+    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, float min, float max, float multiplier){//TODO
         GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
         entry.fieldType = FIELD_TYPES.NUMBER_RUNNER;
-        entry.min = min;
-        entry.max = max;
-        entry.digits = digits;
+        entry.min = (int)(min/multiplier);
+        entry.max = (int)(max/multiplier);
+        entry.multiplier = multiplier;
         return entry;
     }
 

@@ -53,10 +53,10 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
 
         LayoutGenerator.GeneratorConfiguration generatorConfiguration = new LayoutGenerator.GeneratorConfiguration(new LayoutGenerator.GeneratorConfigurationEntry[]{
-                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0, 100, 2),
+                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 7, 0.5f),
                 LayoutGenerator.timeEntryFabric("pump_start", "pump_start"),
-                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 100, 2),
-                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 0, 100, 2),
+                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 50),
+                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 20, 40, 0.1f),
                 LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on"),
                 LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off"),
         });

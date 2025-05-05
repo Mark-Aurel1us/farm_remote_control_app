@@ -73,7 +73,7 @@ public class Utils {
         return new JSONObject();
     }
 
-    public static Bitmap plotGraph(long[] timestamps, float[] values,
+    /*public static Bitmap plotGraph(long[] timestamps, float[] values,
                                    String xLabel, String yLabel,
                                    int width, int height) {
         if (timestamps == null || values == null || timestamps.length != values.length || timestamps.length == 0){
@@ -145,6 +145,6 @@ public class Utils {
         }
 
         return bitmap;
-    }
+    }*/
 
 }
