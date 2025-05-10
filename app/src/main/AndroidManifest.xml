@@ -20,6 +20,11 @@
         android:theme="@style/Theme.FarmRemoteControlApp"
         tools:targetApi="31">
         <activity
+            android:name="ru.mipt.farmremotecontrolapp.FarmSelectionActivity"
+            android:exported="false">
+
+        </activity>
+        <activity
             android:name="ru.mipt.farmremotecontrolapp.CommandsActivity"
             android:exported="false" />
         <activity
@@ -38,10 +43,10 @@
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                <!--<category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:pathSuffix=".farmconf" />
-                <data android:mimeType="*/*" />
+                <data android:mimeType="*/*" />-->
             </intent-filter>
         </activity>
         <activity

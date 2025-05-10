@@ -5,23 +5,33 @@ import org.json.JSONObject;
 
 public class FarmCommand {
     public static String TAG = FarmCommand.class.getName();
+
+//    private class Command{
+//        String command;
+//        String runame;
+//    }
+
     public static final String[] COMMAND_NAMES = {
-            "ESP_REST",
+            "ESP_RESET",
             "PUMP_ON",
             "PUMP_OFF",
             "GROWLIGHT_ON",
             "GROWLIGHT_OFF",
             "HEATLAMP_ON",
             "HEATLAMP_OFF",
+            "FARM_ON",
+            "FARM_OFF"
     };
     public static String[] COMMAND_NAMES_RU = {
-            "ESP_REST",
-            "PUMP_ON",
-            "PUMP_OFF",
-            "GROWLIGHT_ON",
-            "GROWLIGHT_OFF",
-            "HEATLAMP_ON",
-            "HEATLAMP_OFF",
+            "Перезагрузка ESP32",
+            "Включенить насос",
+            "Выключить насос",
+            "Включение светодиодной ленты",
+            "Выключение светодиодной ленты",
+            "Включить нагрев",
+            "Выключить нагрев",
+            "Включить ферму",
+            "Выключить ферму"
     };
     public static int COMMAND_COUNT = COMMAND_NAMES.length;
 

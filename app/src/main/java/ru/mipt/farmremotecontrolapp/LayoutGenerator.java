@@ -7,7 +7,6 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -42,8 +41,8 @@ public class LayoutGenerator {
         public FIELD_TYPES fieldType;
         public String fieldName;
         public String fieldNameRu;
-        public int min = Integer.MIN_VALUE;
-        public int max = Integer.MAX_VALUE;
+        public float min = Float.MIN_VALUE;
+        public float max = Float.MAX_VALUE;
         //public String defaultString = null;
         //public int defaultInt;
         public GeneratorConfigurationEntry[] children = null;
@@ -126,8 +125,8 @@ public class LayoutGenerator {
         }
 
         public void checkValidity(){
-            if(number < this.entry.min){this.number = this.entry.min;}
-            if(number > this.entry.max){this.number = this.entry.max;}
+            if(number < 0){this.number = 0;}
+            if(number > (entry.max - entry.min)/multiplier){this.number = (int)((entry.max - entry.min)/multiplier);}
         }
 
 
@@ -136,7 +135,7 @@ public class LayoutGenerator {
         public void putValueToJSON(JSONObject jsonObject) {
             //TODO
             try {
-                jsonObject.put(fieldName, ((float)number)*multiplier);
+                jsonObject.put(fieldName, ((float)number)*multiplier + entry.min);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
@@ -152,15 +151,17 @@ public class LayoutGenerator {
             sb = new SeekBar(context);
             et = new EditText(context);
 
-            et.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+            et.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
 
-            tw.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
-            sb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
-            et.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f));
+            sb.setMax(Math.round((entry.max - entry.min)/multiplier));
+
+            tw.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
+            sb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
+            et.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
 
             tw.setText(fieldName);
             sb.setProgress(number);
-            et.setText("" + number);
+            et.setText("" + (number*multiplier + entry.min));
 
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 EditText editText = et;
@@ -168,7 +169,7 @@ public class LayoutGenerator {
 
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                    editText.setText(String.valueOf(((float)i)*multiplier));
+                    editText.setText(String.valueOf(((float)i)*multiplier + entry.min));
                     numberInputField.number = i;
                 }
                 @Override
@@ -186,10 +187,11 @@ public class LayoutGenerator {
                 @Override
                 public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                     float temp = (float) Float.valueOf(textView.getText().toString());
-                    numberInputField.number = (int)(temp * multiplier);
+                    temp -= entry.min;
+                    numberInputField.number = Math.round(temp / multiplier);
                     numberInputField.checkValidity();
                     seekBar.setProgress(number);
-                    et.setText(String.valueOf(((float)numberInputField.number)*multiplier));
+                    et.setText(String.valueOf(((float)numberInputField.number)*multiplier + entry.min));
                     return false;
                 }
             });
@@ -199,14 +201,17 @@ public class LayoutGenerator {
             horisontalLinearLayout.addView(et);
 
             linearLayout.addView(horisontalLinearLayout);
+
+            this.checkValidity();
         }
 
         @Override
         public void setJSON(JSONObject jsonObject) {
             try {
-                this.number = jsonObject.getInt(fieldName);
+                this.number = (int)((jsonObject.getDouble(fieldName) - entry.min)/multiplier);
                 this.sb.setProgress(number);
-                this.et.setText(String.valueOf(number));
+                this.et.setText(String.valueOf(number*multiplier + entry.min));
+                this.checkValidity();
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
@@ -216,7 +221,7 @@ public class LayoutGenerator {
     public class TimeField extends InputField{
         TimePicker timePicker;//TODO:remove
         TimePickerDialog timePickerDialog;
-        String time;
+        int hours, minutes;
         TextView tw;
         Button bt;
 
@@ -233,30 +238,44 @@ public class LayoutGenerator {
         @Override
         public void putValueToJSON(JSONObject jsonObject) {
             try {
-                jsonObject.put(fieldName, time);
+                jsonObject.put(fieldName, getTime());
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
         }
 
+        private String getTime(){
+            return (hours >= 10 ? "" : "0") + hours + ":" + (minutes >= 10 ? "" : "0") + minutes;
+        }
+
         @Override
         public void appendView(LinearLayout linearLayout) {//TODO
-            TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
-                @Override
-                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                    TimeField.this.time = (hourOfDay >= 10 ? "" : "0") + hourOfDay + ":" + (minute >= 10 ? "" : "0") + minute;
-                }
-            };
-            timePickerDialog = new TimePickerDialog(context, onTimeSetListener, 0, 0, true);
 
-            LinearLayout horisontalLinearLayout = new LinearLayout(context);
-            horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
-            horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
             tw = new TextView(context);
             bt = new Button(context);
 
+            TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                    TimeField.this.hours = hourOfDay;
+                    TimeField.this.minutes = minute;
+                    bt.setText(getTime());
+                }
+            };
+
+            timePickerDialog = new TimePickerDialog(context, onTimeSetListener, hours, minutes, true);
+
+            //LinearLayout horisontalLinearLayout = new LinearLayout(context);
+            //horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);
+            //horisontalLinearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+
+
             tw.setText(fieldName);
+
+            bt.setText(getTime());
 
             bt.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -264,10 +283,13 @@ public class LayoutGenerator {
                     timePickerDialog.show();
                 }
             });
-            horisontalLinearLayout.addView(tw);
-            horisontalLinearLayout.addView(bt);
+            //horisontalLinearLayout.addView(tw);
+            //horisontalLinearLayout.addView(bt);
 
-            linearLayout.addView(horisontalLinearLayout);
+            linearLayout.addView(tw);
+            linearLayout.addView(bt);
+
+            //linearLayout.addView(horisontalLinearLayout);
             /*
             timePicker = new TimePicker(context);
 
@@ -282,17 +304,19 @@ public class LayoutGenerator {
 
         @Override
         public void setJSON(JSONObject jsonObject) {
+            String time = getTime();
             try {
-                this.time = jsonObject.getString(fieldName);
+                time = jsonObject.getString(fieldName);
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
             }
-            SimpleDateFormat format = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
             try {
-                Date date = format.parse(time);
-                this.timePicker.setHour(date.getHours());
-                this.timePicker.setMinute(date.getMinutes());
-            } catch (ParseException e) {
+                String[] split = time.split(":");
+                hours = Integer.valueOf(split[0]);
+                minutes = Integer.valueOf(split[1]);
+                bt.setText(getTime());
+            } catch (Exception e) {
                 Log.d(TAG, e.getMessage());
             }
         }
@@ -375,7 +399,7 @@ public class LayoutGenerator {
         }
     }
 
-    public  class DateTimeField extends InputField {
+    public class DateTimeField extends InputField {
 
         DatePickerDialog datePickerDialog;
         TimePickerDialog timePickerDialog;
@@ -521,8 +545,8 @@ public class LayoutGenerator {
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
         entry.fieldType = FIELD_TYPES.NUMBER_RUNNER;
-        entry.min = (int)(min/multiplier);
-        entry.max = (int)(max/multiplier);
+        entry.min = (min);
+        entry.max = (max);
         entry.multiplier = multiplier;
         return entry;
     }

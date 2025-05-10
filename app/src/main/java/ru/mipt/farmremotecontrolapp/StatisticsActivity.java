@@ -80,7 +80,7 @@ public class StatisticsActivity extends AppCompatActivity {
             });
 
             scheduler = Executors.newScheduledThreadPool(1);
-            ScheduledFuture<?> handle = scheduler.scheduleWithFixedDelay(controlMessage, 10, 10, java.util.concurrent.TimeUnit.SECONDS);
+            ScheduledFuture<?> handle = scheduler.scheduleWithFixedDelay(controlMessage, 0, 10, java.util.concurrent.TimeUnit.SECONDS);
 
 
         } catch (JSONException e) {
@@ -144,8 +144,8 @@ public class StatisticsActivity extends AppCompatActivity {
                     table.removeAllViews();
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM HH:mm:ss", Locale.getDefault());
                     int len = time.length;
-                    if(!showTable) {len = 10;}
-                    for (int i = 0; i < time.length && i < len; i++) {
+                    if(!showTable) {len = 100;} //else {len = 100;}
+                    for (int i = 0; i < time.length && i < len; i+= 10) {
                         TableRow tableRow = new TableRow(StatisticsActivity.this);
                         LinearLayout horisontalLinearLayout = new LinearLayout(StatisticsActivity.this);
                         horisontalLinearLayout.setOrientation(LinearLayout.HORIZONTAL);

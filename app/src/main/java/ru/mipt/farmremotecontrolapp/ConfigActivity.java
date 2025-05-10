@@ -21,6 +21,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.ui.AppBarConfiguration;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.nio.file.Path;
 
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
@@ -42,7 +45,6 @@ public class ConfigActivity extends AppCompatActivity {
     LinearLayout[] linearLayout = new LinearLayout[FarmConfig.PROPERTIES_NUMBER];
     FarmConfig farmConfig = FarmConfig.fromFile(null);
 
-
      */
     LayoutGenerator layoutGenerator = null;
 
@@ -53,9 +55,9 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
 
         LayoutGenerator.GeneratorConfiguration generatorConfiguration = new LayoutGenerator.GeneratorConfiguration(new LayoutGenerator.GeneratorConfigurationEntry[]{
-                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 7, 0.5f),
+                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 6.5f, 0.5f),
                 LayoutGenerator.timeEntryFabric("pump_start", "pump_start"),
-                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 50),
+                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 10),
                 LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 20, 40, 0.1f),
                 LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on"),
                 LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off"),
@@ -64,6 +66,15 @@ public class ConfigActivity extends AppCompatActivity {
         LinearLayout linearLayout = findViewById(R.id.linear_vertical_container_config);
         if(isNull(linearLayout)){Log.d(TAG, "LinearLayout is null");}
         layoutGenerator = new LayoutGenerator(ConfigActivity.this, linearLayout, generatorConfiguration);
+
+        if(Utils.existsInternalStorage("farm001.json", ConfigActivity.this)){
+            try {
+                layoutGenerator.setJSONObject(new JSONObject(Utils.readInternalStorage("farm001.json", ConfigActivity.this)));
+            } catch (JSONException e) {
+                Log.d(TAG, e.getMessage());
+            }
+        }
+
         /*
         FarmConfig temporaryFarmConfig = farmConfig;
 
@@ -142,6 +153,7 @@ public class ConfigActivity extends AppCompatActivity {
         }
         loadConfig(temporaryFarmConfig);
 */
+
         Button buttonOpenFile = findViewById(R.id.button_open_file);
         //Button buttonUploadConfig = findViewById(R.id.button_upload_config);
         buttonOpenFile.setOnClickListener(new View.OnClickListener() {
@@ -162,6 +174,9 @@ public class ConfigActivity extends AppCompatActivity {
                 ControlMessage controlMessage = ControlMessage.setConfigMessage(layoutGenerator.getJSONObject());
                         Thread thread = new Thread(controlMessage);
                 thread.start();
+
+                Utils.writeInternalStorage("farm001.json", layoutGenerator.getJSONObject().toString(), ConfigActivity.this);
+
             }
         });
 

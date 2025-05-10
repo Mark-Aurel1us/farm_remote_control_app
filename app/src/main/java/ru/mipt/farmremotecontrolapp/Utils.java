@@ -3,31 +3,24 @@ package ru.mipt.farmremotecontrolapp;
 import static java.util.Objects.isNull;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import android.graphics.Color;
-import android.graphics.Paint;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class Utils {
@@ -71,6 +64,37 @@ public class Utils {
             Log.d(TAG,"Error parsing JSON file");
         }
         return new JSONObject();
+    }
+
+    static void writeInternalStorage(String filename, String contents, Context context){
+        try {
+            FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE);
+            fos.write(contents.getBytes());
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
+    }
+
+    static boolean existsInternalStorage(String filename, Context context){
+        File file = new File(context.getFilesDir(), filename);
+        return file.exists();
+    }
+
+    static String readInternalStorage(String filename, Context context){
+        try {
+            //if(!existsInternalStorage(filename, context)){writeInternalStorage(filename, "{}", context);}
+            FileInputStream fis = context.openFileInput(filename);
+            Scanner scanner = new Scanner(fis);
+            StringBuilder sb = new StringBuilder();
+            while(scanner.hasNext()) {
+                sb.append(scanner.next());
+            }
+            scanner.close();
+            return sb.toString();
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+            return null;
+        }
     }
 
     /*public static Bitmap plotGraph(long[] timestamps, float[] values,
