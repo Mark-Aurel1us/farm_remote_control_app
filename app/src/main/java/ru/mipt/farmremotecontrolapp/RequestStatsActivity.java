@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CalendarView;
 import android.widget.LinearLayout;
 
 import androidx.activity.EdgeToEdge;
@@ -13,10 +12,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import org.json.JSONObject;
-
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import ru.mipt.ru.mipt.farmremotecontrolapp.R;
 
@@ -41,10 +37,10 @@ public class RequestStatsActivity extends AppCompatActivity {
 
         LayoutGenerator.GeneratorConfigurationEntry[] generatorConfigurationEntries = {
                 //LayoutGenerator.dateTimeEntryFabric("test_field", "Тестовое поле", LocalDateTime.now().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalDate().toEpochDay()),
-                LayoutGenerator.titleEntryFabric("Введите период для отправки данных"),
+                LayoutGenerator.titleEntryFabric("Введите период для просмотра данных с датчиков"),
 
-                LayoutGenerator.dateTimeEntryFabric("unix_time_from", "Начиная с:", LocalDateTime.now().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalDate().minusDays(1).toEpochDay()),
-                LayoutGenerator.dateTimeEntryFabric("unix_time_to", "До:", LocalDateTime.now().toLocalTime().plusHours(1).toSecondOfDay(), LocalDateTime.now().toLocalDate().toEpochDay()),
+                LayoutGenerator.dateTimeEntryFabric("unix_time_from", "Начиная с:", LocalDateTime.now().toLocalTime().toSecondOfDay(), LocalDateTime.now().toLocalDate().minusDays(1).toEpochDay(), new LayoutGenerator.JSON_FORMATS[0]),
+                LayoutGenerator.dateTimeEntryFabric("unix_time_to", "До:", LocalDateTime.now().toLocalTime().plusHours(1).toSecondOfDay(), LocalDateTime.now().toLocalDate().toEpochDay(), new LayoutGenerator.JSON_FORMATS[0]),
                 //LayoutGenerator.dateEntryFabric("unix_time_from", ""),
                 //LayoutGenerator.dateEntryFabric("unix_time_to", ""),
         };

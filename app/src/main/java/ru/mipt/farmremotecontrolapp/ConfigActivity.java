@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,12 +56,12 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
 
         LayoutGenerator.GeneratorConfiguration generatorConfiguration = new LayoutGenerator.GeneratorConfiguration(new LayoutGenerator.GeneratorConfigurationEntry[]{
-                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 6.5f, 0.5f),
-                LayoutGenerator.timeEntryFabric("pump_start", "pump_start"),
-                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 10),
-                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 20, 40, 0.1f),
-                LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on"),
-                LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off"),
+                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 6.5f, 0.5f, new LayoutGenerator.JSON_FORMATS[]{}),
+                LayoutGenerator.timeEntryFabric("pump_start", "pump_start", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
+                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 10, new LayoutGenerator.JSON_FORMATS[0]),
+                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 20, 40, 0.1f, new LayoutGenerator.JSON_FORMATS[0]),
+                LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
+                LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
         });
 
         LinearLayout linearLayout = findViewById(R.id.linear_vertical_container_config);
@@ -172,6 +173,19 @@ public class ConfigActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //ControlMessage controlMessage = ControlMessage.setConfigMessage(farmConfig.toJSONObject());
                 ControlMessage controlMessage = ControlMessage.setConfigMessage(layoutGenerator.getJSONObject());
+                controlMessage.setOnReceiveListener(new ControlMessage.OnReceiveListener() {
+                    @Override
+                    void receive(ControlMessage controlMessage) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(ConfigActivity.this, "Конфигурация загружена", Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        });
+
+                    }
+                });
                         Thread thread = new Thread(controlMessage);
                 thread.start();
 

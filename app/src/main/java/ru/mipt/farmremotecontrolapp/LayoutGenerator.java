@@ -18,15 +18,11 @@ import android.widget.TimePicker;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Date;
 
 public class LayoutGenerator {
 
@@ -50,6 +46,7 @@ public class LayoutGenerator {
         public long secondOfDay = 0;
         public long epochDay = 0;
         //public GeneratorConfiguration child = null;
+        public JSON_FORMATS[] settings;
     }
 
     enum FIELD_TYPES {
@@ -69,6 +66,7 @@ public class LayoutGenerator {
         UNIX_TIME_OF_DATE,
         UNIX_TIME,
         STRING_TIME,
+        DASH_DEFAULT,
     }
     /*
     static class InputFieldBehaviour {
@@ -383,7 +381,12 @@ public class LayoutGenerator {
                 }
             });
             Button dateButton = new Button(context);
-            dateButton.setText(this.entry.fieldNameRu);
+            if(hasFormat(entry.settings, JSON_FORMATS.DASH_DEFAULT)){
+                dateButton.setText("-");
+            } else {
+                dateButton.setText(this.entry.fieldNameRu);
+            }
+
             dateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -540,7 +543,7 @@ public class LayoutGenerator {
     }
 
 
-    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, float min, float max, float multiplier){//TODO
+    static GeneratorConfigurationEntry numberRunnerEntryFabric(String fieldName, String fieldNameRu, float min, float max, float multiplier, JSON_FORMATS[] settings){//TODO
         GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
@@ -548,14 +551,16 @@ public class LayoutGenerator {
         entry.min = (min);
         entry.max = (max);
         entry.multiplier = multiplier;
+        entry.settings = settings;
         return entry;
     }
 
-    static GeneratorConfigurationEntry timeEntryFabric(String fieldName, String fieldNameRu){//TODO
+    static GeneratorConfigurationEntry timeEntryFabric(String fieldName, String fieldNameRu, JSON_FORMATS[] settings){//TODO
         GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
         entry.fieldType = FIELD_TYPES.TIME;
+        entry.settings = settings;
         return entry;
     }
 
@@ -582,17 +587,24 @@ public class LayoutGenerator {
         return entry;
     }
 
-    static GeneratorConfigurationEntry dateTimeEntryFabric(String fieldName, String fieldNameRu, long defaultTime, long defaultDate){
+    static GeneratorConfigurationEntry dateTimeEntryFabric(String fieldName, String fieldNameRu, long defaultTime, long defaultDate, JSON_FORMATS[] settings){
         GeneratorConfigurationEntry entry = new GeneratorConfigurationEntry();
         entry.fieldName = fieldName;
         entry.fieldNameRu = fieldNameRu;
         entry.fieldType = FIELD_TYPES.DATE_TIME;
         entry.secondOfDay = defaultTime;
         entry.epochDay = defaultDate;
+        entry.settings = settings;
         return entry;
     }
     //public class NumberField extends InputField{} //unused
 
+    static boolean hasFormat(JSON_FORMATS[] settings, JSON_FORMATS compare){
+        for(JSON_FORMATS s : settings){
+            if(s == compare) return true;
+        }
+        return false;
+    }
 
     //LayoutGenerator.GeneratorConfiguration generatorConfiguration = null;
     private LinearLayout linearLayout;
