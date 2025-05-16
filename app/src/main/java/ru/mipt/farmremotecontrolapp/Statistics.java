@@ -28,6 +28,16 @@ public class Statistics {
             "soil_moisture",
             "light_intensity"
     };
+
+    static final String[] STATISTICS_NAMES_RU = {
+            "Температура воздуха",
+            "Температура воды",
+            "Влажность",
+            "Уровень воды",
+            "Влажность почвы",
+            "Яркость света"
+    };
+
     static final int STATISTICS_COUNT = STATISTICS_NAMES.length;
     private double[][] data;
     private long[] time;

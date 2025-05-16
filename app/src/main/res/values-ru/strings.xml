@@ -3,4 +3,10 @@
     <string name="button_open_file">Открыть из файла...</string>
     <string name="button_upload_config">Загрузить конфигурацию на сервер</string>
     <string name="set_config_button">Конфигурация...</string>
+    <string name="configure">Параметры</string>
+    <string name="statistics">Статистика</string>
+    <string name="commands">Команды</string>
+    <string name="request_stats">Запросить данные за выбранный период времени</string>
+    <string name="show_full_table">Показать полную таблицу</string>
+    <string name="hide_full_table">Свернуть полную таблицу</string>
 </resources>

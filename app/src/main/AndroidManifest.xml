@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <!-- <uses-permission -->
     <!-- android:name="android.permission.MANAGE_EXTERNAL_STORAGE" -->
     <!-- tools:ignore="ScopedStorage" /> -->
@@ -19,11 +20,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FarmRemoteControlApp"
         tools:targetApi="31">
+        <receiver
+            android:name="ru.mipt.farmremotecontrolapp.NewAppWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/new_app_widget_info" />
+        </receiver>
+
+<!--        <activity-->
+<!--            android:name="ru.mipt.farmremotecontrolapp.NewAppWidgetConfigureActivity"-->
+<!--            android:exported="false">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <activity
             android:name="ru.mipt.farmremotecontrolapp.FarmSelectionActivity"
-            android:exported="false">
-
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name="ru.mipt.farmremotecontrolapp.CommandsActivity"
             android:exported="false" />
@@ -43,10 +61,12 @@
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-                <!--<category android:name="android.intent.category.BROWSABLE" />
+                <!--
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:pathSuffix=".farmconf" />
-                <data android:mimeType="*/*" />-->
+                <data android:mimeType="*/*" />
+                -->
             </intent-filter>
         </activity>
         <activity

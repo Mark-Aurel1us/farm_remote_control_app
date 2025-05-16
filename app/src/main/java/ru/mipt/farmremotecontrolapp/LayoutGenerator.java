@@ -157,7 +157,7 @@ public class LayoutGenerator {
             sb.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
             et.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1.0f));
 
-            tw.setText(fieldName);
+            tw.setText(entry.fieldNameRu);
             sb.setProgress(number);
             et.setText("" + (number*multiplier + entry.min));
 
@@ -271,7 +271,7 @@ public class LayoutGenerator {
 
 
 
-            tw.setText(fieldName);
+            tw.setText(entry.fieldNameRu);
 
             bt.setText(getTime());
 
@@ -439,7 +439,7 @@ public class LayoutGenerator {
                 public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                     LocalDate localDate = LocalDate.of(year, month+1, dayOfMonth);
                     DateTimeField.this.epochDay = localDate.toEpochDay();
-                    dateButton.setText(LocalDate.of(year, month, dayOfMonth).format(ymdFormat));
+                    dateButton.setText(LocalDate.of(year, month+1, dayOfMonth).format(ymdFormat));
                 }
             });
             LocalDateTime localDateTime = LocalDateTime.of(LocalDate.ofEpochDay(epochDay), LocalTime.ofSecondOfDay(secondOfDay));

@@ -56,12 +56,12 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
 
         LayoutGenerator.GeneratorConfiguration generatorConfiguration = new LayoutGenerator.GeneratorConfiguration(new LayoutGenerator.GeneratorConfigurationEntry[]{
-                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "pump_interval_days", 0.5f, 6.5f, 0.5f, new LayoutGenerator.JSON_FORMATS[]{}),
-                LayoutGenerator.timeEntryFabric("pump_start", "pump_start", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
-                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "pump_volume_ml", 0, 10000, 10, new LayoutGenerator.JSON_FORMATS[0]),
-                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "heatlamp_target_temp", 20, 40, 0.1f, new LayoutGenerator.JSON_FORMATS[0]),
-                LayoutGenerator.timeEntryFabric("growlight_on", "growlight_on", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
-                LayoutGenerator.timeEntryFabric("growlight_off", "growlight_off", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
+                LayoutGenerator.numberRunnerEntryFabric("pump_interval_days", "Период полива, дней", 0.5f, 7f, 0.5f, new LayoutGenerator.JSON_FORMATS[]{}),
+                LayoutGenerator.timeEntryFabric("pump_start", "Начало полива", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
+                LayoutGenerator.numberRunnerEntryFabric("pump_volume_ml", "Объём полива, мл", 0, 1000, 10, new LayoutGenerator.JSON_FORMATS[0]),
+                LayoutGenerator.numberRunnerEntryFabric("heatlamp_target_temp", "Целевая температура, ℃", 18, 32, 0.1f, new LayoutGenerator.JSON_FORMATS[0]),
+                LayoutGenerator.timeEntryFabric("growlight_on", "Начало освещения", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
+                LayoutGenerator.timeEntryFabric("growlight_off", "Конец освещения", new LayoutGenerator.JSON_FORMATS[]{LayoutGenerator.JSON_FORMATS.DASH_DEFAULT}),
         });
 
         LinearLayout linearLayout = findViewById(R.id.linear_vertical_container_config);

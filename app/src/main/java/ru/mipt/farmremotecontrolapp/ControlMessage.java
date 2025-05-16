@@ -17,6 +17,7 @@ public class ControlMessage implements Runnable {
         SET_CONFIG,
         GET_CONFIG,
         GET_STATS,
+        GET_LAST_STAT,
         CHECK_FARM,
         SEND_COMMAND,
     };
@@ -42,6 +43,12 @@ public class ControlMessage implements Runnable {
         return controlMessage;
     }
 
+    public static ControlMessage getLastStatisticMessage(){
+        ControlMessage controlMessage = new ControlMessage();
+        controlMessage.flag = flags.GET_LAST_STAT;
+        return controlMessage;
+    }
+
     public static ControlMessage setConfigMessage(JSONObject configMessage){
         ControlMessage controlMessage = new ControlMessage();
         controlMessage.flag = flags.SET_CONFIG;
@@ -62,6 +69,7 @@ public class ControlMessage implements Runnable {
     private int getPort(){
         switch (flag){
             case GET_STATS:
+            case GET_LAST_STAT:
                 return 1488;
             case SET_CONFIG:
                 return 1489;
@@ -135,6 +143,11 @@ public class ControlMessage implements Runnable {
                 case SEND_COMMAND:
                     sendJSON(dOut, sendMessage);
                     dOut.writeBytes("\n");
+                    break;
+                case GET_LAST_STAT:
+                    sendJSON(dOut, new JSONObject());
+                    this.stats = Statistics.fromStream(dIn);
+                    break;
             }
 
             // Close the socket

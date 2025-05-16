@@ -94,7 +94,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         for(int i = 0; i < Statistics.STATISTICS_COUNT; i++){
             Button button = new Button(StatisticsActivity.this);
-            button.setText(Statistics.STATISTICS_NAMES[i]);
+            button.setText(Statistics.STATISTICS_NAMES_RU[i]);
             int finalI = i;
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -110,13 +110,13 @@ public class StatisticsActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((Button)v).setText(StatisticsActivity.this.showTable ? "Show full table" : "Hide full table");
+                ((Button)v).setText(StatisticsActivity.this.showTable ? getText(R.string.show_full_table) : getText(R.string.hide_full_table));
                 drawGraphic(statistics.getTime(), statistics.getData(lastGraph), Statistics.STATISTICS_NAMES[lastGraph]);
                 StatisticsActivity.this.showTable = !StatisticsActivity.this.showTable;
 
             }
         });
-        button.setText("Show full table");
+        button.setText(R.string.show_full_table);
 
         linearLayout.addView(graphicView);
 
